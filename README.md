@@ -161,7 +161,7 @@ A database uniqueness constraint provides the final safeguard, including races b
 
 ### Setup
 
-1. Create a PostgreSQL database:
+1. Connect to your PostgreSQL instance using pgAdmin, `psql`, or another PostgreSQL client, and execute:
 
    ```sql
    CREATE DATABASE flow_bank;
@@ -177,13 +177,37 @@ A database uniqueness constraint provides the final safeguard, including races b
 
    The local configuration file is ignored by Git. The example also sets Hibernate schema validation and pagination defaults. Flyway applies database migrations during startup.
 
+   The database user configured above must have permission to connect to `flow_bank` and create and modify schema objects so Flyway can apply migrations.
+
 3. Start the application:
 
    ```bash
    mvn spring-boot:run
    ```
 
-The default base URL is `http://localhost:8080`. Follow the session and CSRF workflow above before calling authenticated endpoints.
+   After starting the application, check the console for a successful Spring Boot startup message (`Started ...`). Flyway migrations should complete without errors.
+
+   The default base URL is `http://localhost:8080`. FlowBank is a REST API with authentication; opening this URL in a browser is not a startup check. Follow the session and CSRF workflow above before calling authenticated endpoints.
+
+4. Run all tests, including integration tests, from the project root (the directory containing `pom.xml`):
+
+   Start Docker Desktop or another Docker-compatible container runtime and wait until it is ready, then run:
+
+   ```bash
+   mvn clean verify
+   ```
+
+   This runs unit tests through Surefire and integration tests (`*IT` classes) through Failsafe, then generates combined coverage. `mvn clean test` runs only unit tests and does **not** run integration tests.
+
+   Testcontainers automatically starts PostgreSQL 17 for integration tests. You do not need to start the application or create a local PostgreSQL database just to run tests; steps 1–3 above are for running the application. The first integration-test run needs access to download the container images.
+
+   To run integration tests only:
+
+   ```bash
+   mvn clean verify -DskipUnitTests=true
+   ```
+
+   Check `target/surefire-reports/` for unit-test results, `target/failsafe-reports/` for integration-test results, and `target/site/jacoco/index.html` for coverage. See [Tests and coverage](#tests-and-coverage) for more test commands.
 
 ## Tests and coverage
 
